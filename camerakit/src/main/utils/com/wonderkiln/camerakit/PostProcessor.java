@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Rect;
 import android.support.media.ExifInterface;
+import android.util.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -42,6 +43,7 @@ public class PostProcessor {
     }
 
     public byte[] getJpeg() {
+        Log.d("PostProcessor.class", cropAspectRatio.toString());
         Bitmap bitmap;
         try {
             bitmap = getBitmap();
@@ -56,8 +58,8 @@ public class PostProcessor {
             bitmapOperation.flipBitmapHorizontal();
         }
 
-        bitmap = bitmapOperation.getBitmap();
 
+        bitmap = bitmapOperation.getBitmap();
         if (cropAspectRatio != null) {
             new CenterCrop(bitmap.getWidth(), bitmap.getHeight(), cropAspectRatio).apply(bitmapOperation);
         }
