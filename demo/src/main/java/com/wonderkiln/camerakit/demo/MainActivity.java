@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         setupDrawerAndToolbar();
 
         camera.setMethod(cameraMethod);
-        camera.setCropOutput(cropOutput);
+        //camera.setCropOutput(cropOutput);
     }
 
     @Override

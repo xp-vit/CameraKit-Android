@@ -43,7 +43,6 @@ public class PostProcessor {
     }
 
     public byte[] getJpeg() {
-        Log.d("PostProcessor.class", cropAspectRatio.toString());
         Bitmap bitmap;
         try {
             bitmap = getBitmap();
