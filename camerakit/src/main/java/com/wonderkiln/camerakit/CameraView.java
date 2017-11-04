@@ -10,8 +10,6 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
-import android.graphics.Rect;
-import android.graphics.YuvImage;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
@@ -28,7 +26,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -430,26 +427,18 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
         captureImage(null);
     }
 
-    public void captureImage(final CKEventCallback<CKImage> callback) {
+    public void captureImage(final CameraKitEventCallback<CameraKitImage> callback) {
         mCameraImpl.captureImage(new CameraImpl.ImageCapturedCallback() {
             @Override
             public void imageCaptured(byte[] jpeg) {
                 PostProcessor postProcessor = new PostProcessor(jpeg);
                 postProcessor.setJpegQuality(mJpegQuality);
                 postProcessor.setFacing(mFacing);
-                postProcessor.setMethod(mMethod);
                 if (mCropOutput) postProcessor.setCropOutput(AspectRatio.of(getWidth(), getHeight()));
 
-                CKImage image = new CKImage(postProcessor.getJpeg());
+                CameraKitImage image = new CameraKitImage(postProcessor.getJpeg());
                 if (callback != null) callback.callback(image);
                 mEventDispatcher.dispatch(image);
-            }
-
-            @Override
-            public void imageCaptured(YuvImage yuvImage) {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                yuvImage.compressToJpeg(new Rect(0, 0, yuvImage.getWidth(), yuvImage.getHeight()), 100, out);
-                imageCaptured(out.toByteArray());
             }
         });
     }
@@ -458,11 +447,11 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
         captureVideo(null);
     }
 
-    public void captureVideo(final CKEventCallback<CKVideo> callback) {
+    public void captureVideo(final CameraKitEventCallback<CameraKitVideo> callback) {
         mCameraImpl.captureVideo(new CameraImpl.VideoCapturedCallback() {
             @Override
             public void videoCaptured(File file) {
-                CKVideo video = new CKVideo(file);
+                CameraKitVideo video = new CameraKitVideo(file);
                 if (callback != null) callback.callback(video);
                 mEventDispatcher.dispatch(video);
             }
@@ -503,8 +492,8 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
         }
     }
 
-    public void addCameraKitListener(CKEventListener CKEventListener) {
-        mEventDispatcher.addListener(CKEventListener);
+    public void addCameraKitListener(CameraKitEventListener CameraKitEventListener) {
+        mEventDispatcher.addListener(CameraKitEventListener);
     }
 
     public void bindCameraKitListener(Object object) {

@@ -19,7 +19,6 @@ public class PostProcessor {
     private byte[] picture;
     private int jpegQuality;
     private int facing;
-    private int method;
     private AspectRatio cropAspectRatio;
 
     public PostProcessor(byte[] picture) {
@@ -34,10 +33,6 @@ public class PostProcessor {
         this.facing = facing;
     }
 
-    public void setMethod(int method) {
-        this.method = method;
-    }
-
     public void setCropOutput(AspectRatio aspectRatio) {
         this.cropAspectRatio = aspectRatio;
     }
@@ -50,29 +45,39 @@ public class PostProcessor {
             return null;
         }
 
-        BitmapOperation bitmapOperation = new BitmapOperation(bitmap);
-        new ExifPostProcessor(picture).apply(bitmapOperation);
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        BitmapOperator bitmapOperator = new BitmapOperator(bitmap);
+        bitmap.recycle();
+
+        ExifPostProcessor exifPostProcessor = new ExifPostProcessor(picture);
+        exifPostProcessor.apply(bitmapOperator);
 
         if (facing == FACING_FRONT) {
-            bitmapOperation.flipBitmapHorizontal();
+            bitmapOperator.flipBitmapHorizontal();
         }
 
 
-        bitmap = bitmapOperation.getBitmap();
         if (cropAspectRatio != null) {
-            new CenterCrop(bitmap.getWidth(), bitmap.getHeight(), cropAspectRatio).apply(bitmapOperation);
+            int cropWidth = width;
+            int cropHeight = height;
+            if (exifPostProcessor.areDimensionsFlipped()) {
+                cropWidth = height;
+                cropHeight = width;
+            }
+
+            new CenterCrop(cropWidth, cropHeight, cropAspectRatio).apply(bitmapOperator);
         }
 
-        bitmap = bitmapOperation.getBitmapAndFree();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, jpegQuality, out);
-        return out.toByteArray();
+        return bitmapOperator.getJpegAndFree(jpegQuality);
     }
 
     private Bitmap getBitmap() throws IOException {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeByteArray(picture, 0, picture.length, options);
+
         return BitmapRegionDecoder.newInstance(
                 picture,
                 0,
@@ -93,35 +98,53 @@ public class PostProcessor {
             }
         }
 
-        public void apply(BitmapOperation bitmapOperation) {
+        public void apply(BitmapOperator bitmapOperator) {
             switch (orientation) {
                 case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
-                    bitmapOperation.flipBitmapHorizontal();
+                    bitmapOperator.flipBitmapHorizontal();
                     break;
                 case ExifInterface.ORIENTATION_ROTATE_180:
-                    bitmapOperation.rotateBitmap(180);
+                    bitmapOperator.rotateBitmap(180);
                     break;
                 case ExifInterface.ORIENTATION_FLIP_VERTICAL:
-                    bitmapOperation.flipBitmapVertical();
+                    bitmapOperator.flipBitmapVertical();
                     break;
                 case ExifInterface.ORIENTATION_TRANSPOSE:
-                    bitmapOperation.rotateBitmap(90);
-                    bitmapOperation.flipBitmapHorizontal();
+                    bitmapOperator.rotateBitmap(90);
+                    bitmapOperator.flipBitmapHorizontal();
                     break;
                 case ExifInterface.ORIENTATION_ROTATE_90:
-                    bitmapOperation.rotateBitmap(90);
+                    bitmapOperator.rotateBitmap(90);
                     break;
                 case ExifInterface.ORIENTATION_TRANSVERSE:
-                    bitmapOperation.rotateBitmap(270);
-                    bitmapOperation.flipBitmapHorizontal();
+                    bitmapOperator.rotateBitmap(270);
+                    bitmapOperator.flipBitmapHorizontal();
                     break;
                 case ExifInterface.ORIENTATION_ROTATE_270:
-                    bitmapOperation.rotateBitmap(270);
+                    bitmapOperator.rotateBitmap(270);
                     break;
                 case ExifInterface.ORIENTATION_NORMAL:
                 case ExifInterface.ORIENTATION_UNDEFINED:
                     break;
             }
+        }
+
+        public boolean areDimensionsFlipped() {
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_TRANSPOSE:
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                case ExifInterface.ORIENTATION_TRANSVERSE:
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    return true;
+                case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                case ExifInterface.ORIENTATION_NORMAL:
+                case ExifInterface.ORIENTATION_UNDEFINED:
+                    return false;
+            }
+
+            return false;
         }
 
         private static int getExifOrientation(InputStream inputStream) throws IOException {
@@ -143,9 +166,9 @@ public class PostProcessor {
             this.aspectRatio = aspectRatio;
         }
 
-        public void apply(BitmapOperation bitmapOperation) {
+        public void apply(BitmapOperator bitmapOperator) {
             Rect crop = getCrop(width, height, aspectRatio);
-            bitmapOperation.cropBitmap(crop.left, crop.top, crop.right, crop.bottom);
+            bitmapOperator.cropBitmap(crop.left, crop.top, crop.right, crop.bottom);
         }
 
         private static Rect getCrop(int currentWidth, int currentHeight, AspectRatio targetRatio) {

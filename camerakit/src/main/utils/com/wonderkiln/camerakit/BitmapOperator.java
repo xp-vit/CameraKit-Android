@@ -1,41 +1,17 @@
 package com.wonderkiln.camerakit;
 
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
-import android.util.Log;
 
 import java.nio.ByteBuffer;
 
-public class BitmapOperation {
+public class BitmapOperator {
 
     private ByteBuffer handler;
 
-    static {
-        System.loadLibrary("JniBitmapOperations");
+    private BitmapOperator() {
     }
 
-    private native ByteBuffer jniStoreBitmapData(Bitmap bitmap);
-
-    private native Bitmap jniGetBitmapFromStoredBitmapData(ByteBuffer handler);
-
-    private native void jniFreeBitmapData(ByteBuffer handler);
-
-    private native void jniRotateBitmapCcw90(ByteBuffer handler);
-
-    private native void jniRotateBitmapCw90(ByteBuffer handler);
-
-    private native void jniRotateBitmap180(ByteBuffer handler);
-
-    private native void jniCropBitmap(ByteBuffer handler, final int left, final int top, final int right, final int bottom);
-
-    private native void jniFlipBitmapHorizontal(ByteBuffer handler);
-
-    private native void jniFlipBitmapVertical(ByteBuffer handler);
-
-    private BitmapOperation() {
-    }
-
-    public BitmapOperation(final Bitmap bitmap) {
+    public BitmapOperator(final Bitmap bitmap) {
         storeBitmap(bitmap);
     }
 
@@ -66,6 +42,17 @@ public class BitmapOperation {
         jniFlipBitmapVertical(handler);
     }
 
+    public byte[] getJpeg(int quality) {
+        if (handler == null) return null;
+        return jniGetJpegData(handler, quality);
+    }
+
+    public byte[] getJpegAndFree(int quality) {
+        final byte[] jpeg = getJpeg(quality);
+        freeBitmap();
+        return jpeg;
+    }
+
     public Bitmap getBitmap() {
         if (handler == null) return null;
         return jniGetBitmapFromStoredBitmapData(handler);
@@ -89,5 +76,29 @@ public class BitmapOperation {
         if (handler == null) return;
         freeBitmap();
     }
+
+    static {
+        System.loadLibrary("JniBitmapOperator");
+    }
+
+    private native ByteBuffer jniStoreBitmapData(Bitmap bitmap);
+
+    private native Bitmap jniGetBitmapFromStoredBitmapData(ByteBuffer handler);
+
+    private native byte[] jniGetJpegData(ByteBuffer handler, int quality);
+
+    private native void jniFreeBitmapData(ByteBuffer handler);
+
+    private native void jniRotateBitmapCcw90(ByteBuffer handler);
+
+    private native void jniRotateBitmapCw90(ByteBuffer handler);
+
+    private native void jniRotateBitmap180(ByteBuffer handler);
+
+    private native void jniCropBitmap(ByteBuffer handler, final int left, final int top, final int right, final int bottom);
+
+    private native void jniFlipBitmapHorizontal(ByteBuffer handler);
+
+    private native void jniFlipBitmapVertical(ByteBuffer handler);
 
 }
