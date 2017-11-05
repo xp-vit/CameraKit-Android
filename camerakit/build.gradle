@@ -50,7 +50,7 @@ dependencies {
     annotationProcessor 'android.arch.lifecycle:compiler:1.0.0-beta1'
 }
 
-install {
+/*install {
     repositories.mavenInstaller {
         pom.project {
             name 'CameraKit-Android'
@@ -76,4 +76,4 @@ bintray {
             released = new Date()
         }
     }
-}
+}*/
