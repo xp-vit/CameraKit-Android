@@ -80,7 +80,7 @@ public class CameraView extends FrameLayout implements LifecycleObserver {
     private boolean mAdjustViewBounds;
 
     private DisplayOrientationDetector mDisplayOrientationDetector;
-    private CameraImpl mCameraImpl;
+    protected CameraImpl mCameraImpl;
 
     private PreviewImpl mPreviewImpl;
 
