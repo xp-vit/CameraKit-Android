@@ -36,6 +36,8 @@ public class Camera1 extends CameraImpl {
 
     private static final String TAG = Camera1.class.getSimpleName();
 
+    private final AspectRatio preferedAspectRatio = AspectRatio.of(1, 1);
+
     private static final int FOCUS_AREA_SIZE_DEFAULT = 300;
     private static final int FOCUS_METERING_AREA_WEIGHT_DEFAULT = 1000;
     private static final int DELAY_MILLIS_BEFORE_RESETTING_FOCUS = 3000;
@@ -396,7 +398,13 @@ public class Camera1 extends CameraImpl {
                     mCameraParameters.getSupportedPreviewSizes(),
                     mCameraParameters.getSupportedPictureSizes()
             );
-            AspectRatio targetRatio = aspectRatios.size() > 0 ? aspectRatios.last() : null;
+            AspectRatio targetRatio;
+
+            if (aspectRatios.contains(preferedAspectRatio)) {
+                targetRatio = preferedAspectRatio;
+            } else {
+                targetRatio = aspectRatios.size() > 0 ? aspectRatios.last() : null;
+            }
 
             Iterator<Size> descendingSizes = sizes.descendingIterator();
             Size size;
@@ -457,7 +465,13 @@ public class Camera1 extends CameraImpl {
                     mCameraParameters.getSupportedPreviewSizes(),
                     mCameraParameters.getSupportedPictureSizes()
             );
-            AspectRatio targetRatio = aspectRatios.size() > 0 ? aspectRatios.last() : null;
+            AspectRatio targetRatio;
+
+            if (aspectRatios.contains(preferedAspectRatio)) {
+                targetRatio = preferedAspectRatio;
+            } else {
+                targetRatio = aspectRatios.size() > 0 ? aspectRatios.last() : null;
+            }
 
             Iterator<Size> descendingSizes = sizes.descendingIterator();
             Size size;
