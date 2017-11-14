@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Rect;
 import android.support.media.ExifInterface;
+import android.util.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -56,6 +57,7 @@ public class PostProcessor {
         if (facing == FACING_FRONT) {
             bitmapOperator.flipBitmapHorizontal();
         }
+
 
         if (cropAspectRatio != null) {
             int cropWidth = width;
