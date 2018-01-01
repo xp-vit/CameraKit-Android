@@ -1,21 +1,12 @@
 apply plugin: 'com.android.library'
 
-def ver = '0.12.0'
-
-def isSnapshot(version) {
-    return version.contains('-Snapshot') || System.getenv('CIRCLE_TAG') == null || System.getenv('CIRCLE_TAG').length() == 0
-}
-
-group = 'com.wonderkiln'
-version = ver
-
 android {
-    compileSdkVersion 27
-    buildToolsVersion '27.0.0'
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
     defaultConfig {
-        minSdkVersion 15
-        targetSdkVersion 27
-        versionName ver
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionName rootProject.ext.versionName
     }
     lintOptions {
         abortOnError false
@@ -26,29 +17,15 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    sourceSets {
-        main.java.srcDirs += 'src/main/base'
-        main.java.srcDirs += 'src/main/api16'
-        main.java.srcDirs += 'src/main/api21'
-        main.java.srcDirs += 'src/main/types'
-        main.java.srcDirs += 'src/main/events'
-        main.java.srcDirs += 'src/main/utils'
-    }
-    externalNativeBuild {
-        cmake {
-            path 'src/main/cpp/CMakeLists.txt'
-        }
-    }
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:27.0.0'
-    compile 'com.android.support:exifinterface:27.0.0'
-
-    implementation 'android.arch.lifecycle:runtime:1.0.0'
-    implementation 'android.arch.lifecycle:extensions:1.0.0-beta1'
-    annotationProcessor 'android.arch.lifecycle:compiler:1.0.0-beta1'
+    compile project(':camerakit-core')
+    compile project(':camerakit-vision')
 }
+
+group = 'com.wonderkiln'
+version = rootProject.ext.versionName
 
 /*install {
     repositories.mavenInstaller {
@@ -60,19 +37,19 @@ dependencies {
 }
 
 bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
-    override = isSnapshot(ver)
+    user = rootProject.ext.bintrayUser
+    key = rootProject.ext.bintrayKey
+    override = true
     publish = true
     configurations = ['archives']
     pkg {
-        repo = isSnapshot(ver) ? 'snapshots' : 'maven'
+        repo = 'snapshots'
         name = 'CameraKit-Android'
         userOrg = 'wonderkiln'
         vcsUrl = 'https://github.com/wonderkiln/CameraKit-Android.git'
         version {
-            name = ver
-            vcsTag = ver
+            name = rootProject.ext.versionName
+            vcsTag = rootProject.ext.versionName
             released = new Date()
         }
     }
