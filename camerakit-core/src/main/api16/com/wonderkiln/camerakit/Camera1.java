@@ -288,7 +288,7 @@ public class Camera1 extends CameraImpl {
             if (zoomFactor <= 1) {
                 mZoom = 1;
             } else {
-                mZoom= zoomFactor;
+                mZoom = zoomFactor;
             }
 
             if (mCameraParameters != null && mCameraParameters.isZoomSupported()) {
@@ -612,39 +612,40 @@ public class Camera1 extends CameraImpl {
             } else {
                 targetRatio = null;
 
-            if (mLockVideoAspectRatio) {
-                TreeSet<AspectRatio> videoAspectRatios = findCommonAspectRatios(
-                        mCameraParameters.getSupportedPreviewSizes(),
-                        mCameraParameters.getSupportedPictureSizes()
-                );
+                if (mLockVideoAspectRatio) {
+                    TreeSet<AspectRatio> videoAspectRatios = findCommonAspectRatios(
+                            mCameraParameters.getSupportedPreviewSizes(),
+                            mCameraParameters.getSupportedPictureSizes()
+                    );
 
-                Iterator<AspectRatio> descendingIterator = aspectRatios.descendingIterator();
-                while (targetRatio == null && descendingIterator.hasNext()) {
-                    AspectRatio ratio = descendingIterator.next();
-                    if (videoAspectRatios.contains(ratio)) {
-                        targetRatio = ratio;
+                    Iterator<AspectRatio> descendingIterator = aspectRatios.descendingIterator();
+                    while (targetRatio == null && descendingIterator.hasNext()) {
+                        AspectRatio ratio = descendingIterator.next();
+                        if (videoAspectRatios.contains(ratio)) {
+                            targetRatio = ratio;
+                        }
+                    }
+                }
+
+                if (targetRatio == null) {
+                    targetRatio = aspectRatios.size() > 0 ? aspectRatios.last() : null;
+                }
+
+                Iterator<Size> descendingSizes = sizes.descendingIterator();
+                Size size;
+                while (descendingSizes.hasNext() && mPreviewSize == null) {
+                    size = descendingSizes.next();
+                    if (targetRatio == null || targetRatio.matches(size)) {
+                        mPreviewSize = size;
+                        break;
                     }
                 }
             }
 
-            if (targetRatio == null) {
-                targetRatio = aspectRatios.size() > 0 ? aspectRatios.last() : null;
+            boolean invertPreviewSizes = (mCameraInfo.orientation + mDeviceOrientation) % 180 == 90;
+            if (mPreviewSize != null && invertPreviewSizes) {
+                return new Size(mPreviewSize.getHeight(), mPreviewSize.getWidth());
             }
-
-            Iterator<Size> descendingSizes = sizes.descendingIterator();
-            Size size;
-            while (descendingSizes.hasNext() && mPreviewSize == null) {
-                size = descendingSizes.next();
-                if (targetRatio == null || targetRatio.matches(size)) {
-                    mPreviewSize = size;
-                    break;
-                }
-            }
-        }
-
-        boolean invertPreviewSizes = (mCameraInfo.orientation + mDeviceOrientation) % 180 == 90;
-        if (mPreviewSize != null && invertPreviewSizes) {
-            return new Size(mPreviewSize.getHeight(), mPreviewSize.getWidth());
         }
 
         return mPreviewSize;

@@ -42,7 +42,7 @@ dependencies {
 group = 'com.wonderkiln'
 version = rootProject.ext.versionName
 
-install {
+/*install {
     repositories.mavenInstaller {
         pom.project {
             name 'CameraKit-Core-Android'
@@ -68,4 +68,4 @@ bintray {
             released = new Date()
         }
     }
-}
+}*/
